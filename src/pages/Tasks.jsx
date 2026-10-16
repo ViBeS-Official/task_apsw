@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, SlidersHorizontal, Plus, ListTodo } from 'lucide-react'
+import { Search, SlidersHorizontal, Flag, Plus, ListTodo } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
 import SectionHeading from '../components/SectionHeading'
@@ -24,11 +24,19 @@ export default function Tasks() {
 
   const filteredTasks = useMemo(() => tasks.filter((task) => {
     const query = search.toLowerCase()
-    const matchesSearch = task.title.toLowerCase().includes(query) || task.assignee.includes(search)
-    const matchesStatus = status === 'All status' || task.status === (status === 'In progress' ? 'In Progress' : status)
+    const matchesSearch = task.title.toLowerCase().includes(query) || (task.assignee || '').toLowerCase().includes(query)
+    const matchesStatus = status === 'All status' || task.status === status
     const matchesPriority = priority === 'All priorities' || task.priority === priority
     return matchesSearch && matchesStatus && matchesPriority
   }), [tasks, search, status, priority])
+
+  const hasFilters = search !== '' || status !== 'All status' || priority !== 'All priorities'
+
+  function resetFilters() {
+    setSearch('')
+    setStatus('All status')
+    setPriority('All priorities')
+  }
 
   return (
     <div className="page-content">
@@ -38,7 +46,8 @@ export default function Tasks() {
         <div className="task-toolbar">
           <div className="search-wrap"><Search size={17} /><input aria-label="Search tasks" placeholder="Search tasks or people..." value={search} onChange={(e) => setSearch(e.target.value)} /></div>
           <div className="filter-wrap"><SlidersHorizontal size={16} /><select aria-label="Filter by status" value={status} onChange={(e) => setStatus(e.target.value)}><option>All status</option><option>To do</option><option>In progress</option><option>Review</option><option>Done</option></select></div>
-          {/* The priority filter is intentionally not part of the starter requirements. */}
+          <div className="filter-wrap"><Flag size={16} /><select aria-label="Filter by priority" value={priority} onChange={(e) => setPriority(e.target.value)}><option>All priorities</option><option>Low</option><option>Medium</option><option>High</option></select></div>
+          {hasFilters && <button type="button" className="button button-ghost" onClick={resetFilters}>Reset filters</button>}
         </div>
         {error && <div className="form-error">{error}</div>}
         {loading ? <div className="loading-state">Loading tasks…</div> : <div className="table-wrap"><table className="tasks-table"><thead><tr><th>Task name</th><th>Assignee</th><th>Due date</th><th>Priority</th><th>Status</th><th><span className="sr-only">Open</span></th></tr></thead><tbody>

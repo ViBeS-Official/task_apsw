@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 const blankTask = { title: '', description: '', status: 'To do', priority: 'Medium', dueDate: '', projectId: '1', assignee: '' }
 
-export default function TaskForm({ initialValues, projects, onSubmit, submitLabel = 'Create task' }) {
+export default function TaskForm({ initialValues, projects, onSubmit, onCancel, submitLabel = 'Create task' }) {
   const [form, setForm] = useState({ ...blankTask, ...initialValues })
   const [error, setError] = useState('')
 
@@ -14,7 +14,7 @@ export default function TaskForm({ initialValues, projects, onSubmit, submitLabe
 
   async function handleSubmit(event) {
     event.preventDefault()
-    if (form.title.length === 0) {
+    if (!form.title.trim()) {
       setError('A task title is required.')
       return
     }
@@ -23,7 +23,7 @@ export default function TaskForm({ initialValues, projects, onSubmit, submitLabe
       return
     }
     setError('')
-    await onSubmit(form)
+    await onSubmit({ ...form, title: form.title.trim() })
   }
 
   return (
@@ -45,7 +45,7 @@ export default function TaskForm({ initialValues, projects, onSubmit, submitLabe
         <div className="form-field full-field"><label htmlFor="dueDate">Due date <span>*</span></label><input id="dueDate" type="date" name="dueDate" value={form.dueDate} onChange={update} /></div>
       </div>
       {error && <div className="form-error" role="alert">{error}</div>}
-      <div className="form-actions"><Link to="/tasks" className="button button-ghost"><ArrowLeft size={16} />Cancel</Link><button className="button button-primary" type="submit"><Save size={16} />{submitLabel}</button></div>
+      <div className="form-actions">{onCancel ? <button type="button" className="button button-ghost" onClick={onCancel}><ArrowLeft size={16} />Cancel</button> : <Link to="/tasks" className="button button-ghost"><ArrowLeft size={16} />Cancel</Link>}<button className="button button-primary" type="submit"><Save size={16} />{submitLabel}</button></div>
     </form>
   )
 }
