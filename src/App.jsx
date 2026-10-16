@@ -8,14 +8,20 @@ import Projects from './pages/Projects'
 import ProjectDetails from './pages/ProjectDetails'
 import NewTask from './pages/NewTask'
 import { api } from './api'
+import { useLocation } from 'react-router-dom'
 
 export default function App() {
   const [projects, setProjects] = useState([])
   const [apiError, setApiError] = useState(false)
+  const [taskCount, setTaskCount] = useState(null)
+  const location = useLocation()
 
   useEffect(() => {
     api.getProjects().then(setProjects).catch(() => setApiError(true))
   }, [])
+  useEffect(() => {
+    api.getTasks().then((t) => setTaskCount(t.length)).catch(() => {})
+  }, [location.pathname])
 
   const navItems = [
     { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
@@ -40,7 +46,7 @@ export default function App() {
           {navItems.map(({ to, label, icon: Icon, end }) => (
             <NavLink key={to} to={to} end={end} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Icon size={18} /><span>{label}</span>
-              {label === 'Tasks' && <span className="nav-count">7</span>}
+              {label === 'Tasks' && <span className="nav-count">{taskCount ?? '–'}</span>}
             </NavLink>
           ))}
         </nav>
